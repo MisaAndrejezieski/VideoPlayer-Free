@@ -1,7 +1,4 @@
 import logging
-import os
-import shutil
-import tempfile
 from typing import Optional
 
 import yt_dlp
@@ -13,13 +10,11 @@ logger = logging.getLogger(__name__)
 class VideoLoader:
     def __init__(self, proxy_manager: Optional[ProxyManager] = None):
         self.proxy_manager = proxy_manager or ProxyManager()
-        self.temp_dir = tempfile.mkdtemp(prefix='video_player_')
-        self.current_video = None
-        logger.info(f"📁 Pasta temporária: {self.temp_dir}")
+        self.current_stream = None
+        logger.info("🎥 VideoLoader inicializado para streaming")
         
     def get_video_stream(self, url: str) -> Optional[str]:
-        """Retorna o caminho do vídeo baixado"""
-        os.makedirs(self.temp_dir, exist_ok=True)
+        """Retorna o URL direto do stream para reprodução."""
         try:
             proxy = self.proxy_manager.get_proxy()
             headers = self.proxy_manager.get_headers()
@@ -27,13 +22,11 @@ class VideoLoader:
             logger.info(f"🌐 Usando headers: {headers.get('User-Agent', 'N/A')[:50]}...")
             
             ydl_opts = {
-                'format': 'best[ext=mp4]/best',
-                'quiet': False,  # Muda para False para ver mais detalhes
-                'no_warnings': False,
-                'extract_flat': False,
-                'headers': headers,
-                'outtmpl': os.path.join(self.temp_dir, '%(title)s.%(ext)s'),
-                'socket_timeout': 30,  # Timeout maior
+                'format': 'best',
+                'quiet': True,
+                'no_warnings': True,
+                'http_headers': headers,
+                'socket_timeout': 30,
                 'retries': 3,
             }
             
@@ -43,46 +36,32 @@ class VideoLoader:
             else:
                 logger.warning("⚠️ Sem proxy disponível - usando conexão direta")
             
-            logger.info(f"📥 Baixando vídeo de: {url}")
+            logger.info(f"📥 Extraindo stream de: {url}")
             
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                info = ydl.extract_info(url, download=True)
-                video_path = ydl.prepare_filename(info)
-                
-                logger.info(f"📁 Arquivo gerado: {video_path}")
-                
-                if os.path.exists(video_path):
-                    self.current_video = video_path
-                    logger.info(f"✅ Vídeo carregado com sucesso!")
-                    return video_path
-                else:
-                    logger.error(f"❌ Arquivo não encontrado: {video_path}")
-                
+                info = ydl.extract_info(url, download=False)
+                stream_url = self._select_stream_url(info)
+                if stream_url:
+                    self.current_stream = stream_url
+                    logger.info(f"✅ Stream disponível: {stream_url}")
+                    return stream_url
+                logger.error("❌ Não foi possível obter URL de stream")
         except yt_dlp.utils.DownloadError as e:
-            logger.error(f"❌ Erro de download: {e}")
-            # Fallback: tenta sem proxy
+            logger.error(f"❌ Erro ao extrair stream: {e}")
             try:
-                logger.info("🔄 Tentando sem proxy...")
-                ydl_opts = {
-                    'format': 'best[ext=mp4]/best',
-                    'quiet': False,
-                    'no_warnings': False,
-                    'outtmpl': os.path.join(self.temp_dir, '%(title)s.%(ext)s'),
-                    'socket_timeout': 30,
-                    'retries': 3,
-                }
+                logger.info("🔄 Tentando fallback sem proxy...")
+                ydl_opts.pop('proxy', None)
                 with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                    info = ydl.extract_info(url, download=True)
-                    video_path = ydl.prepare_filename(info)
-                    if os.path.exists(video_path):
-                        self.current_video = video_path
-                        logger.info(f"✅ Vídeo carregado sem proxy!")
-                        return video_path
+                    info = ydl.extract_info(url, download=False)
+                    stream_url = self._select_stream_url(info)
+                    if stream_url:
+                        self.current_stream = stream_url
+                        logger.info(f"✅ Stream disponível sem proxy: {stream_url}")
+                        return stream_url
             except Exception as e2:
-                logger.error(f"❌ Falha no fallback: {e2}")
+                logger.error(f"❌ Fallback falhou: {e2}")
         except Exception as e:
             logger.error(f"❌ Erro geral: {e}")
-        
         return None
     
     def cleanup(self):

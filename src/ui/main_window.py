@@ -198,20 +198,20 @@ class VideoPlayerWindow(QMainWindow):
         self.play_btn.setEnabled(True)
         self.log("✅ Worker finalizado")
         
-    def on_video_loaded(self, video_path):
-        """Quando o vídeo é carregado"""
-        self.current_video = video_path
+    def on_video_loaded(self, stream_url):
+        """Quando o stream é carregado"""
+        self.current_video = stream_url
         self.play_pause_btn.setEnabled(True)
         
-        # Carrega no VLC
-        media = self.instance.media_new(video_path)
+        # Carrega no VLC a URL do stream
+        media = self.instance.media_new(stream_url)
         self.player.set_media(media)
         self.player.play()
         self.is_playing = True
         
         self.status_label.setText("▶ Reproduzindo")
         self.play_pause_btn.setText("⏸")
-        self.log(f"✅ Reproduzindo: {os.path.basename(video_path)}")
+        self.log(f"✅ Reproduzindo stream")
         
         # Atualiza tempo
         self.timer = QTimer()
