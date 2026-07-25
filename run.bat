@@ -28,15 +28,11 @@ echo 🚀 Iniciando Video Player...
 echo ========================================
 echo.
 
-REM CORREÇÃO: Vai para a pasta src e roda
 cd src
 python main.py
 
-if errorlevel 1 (
-    echo.
-    echo ========================================
-    echo  ❌ Programa fechou com erro!
-    echo  Verifique as mensagens acima.
-    echo ========================================
-    pause
-)
+echo.
+echo ========================================
+echo  ✅ Programa finalizado!
+echo ========================================
+pause
