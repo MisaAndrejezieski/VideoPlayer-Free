@@ -7,7 +7,6 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
 from core.proxy_manager import ProxyManager
-# CORREÇÃO: Import absoluto
 from core.video_loader import VideoLoader
 
 
@@ -19,6 +18,8 @@ class VideoPlayerWindow(QMainWindow):
         self.player = None
         self.current_video = None
         self.is_playing = False
+        self.thread = None  # Guarda referência da thread
+        self.worker = None  # Guarda referência do worker
         
         self.setup_ui()
         self.update_proxy_status()
@@ -169,24 +170,37 @@ class VideoPlayerWindow(QMainWindow):
         self.status_label.setText("📥 Carregando...")
         self.play_btn.setEnabled(False)
         
-        # Thread para carregar vídeo
-        thread = QThread()
-        worker = VideoLoaderWorker(url)
-        worker.moveToThread(thread)
+        # CORREÇÃO: Limpa threads antigas
+        if self.thread and self.thread.isRunning():
+            self.thread.quit()
+            self.thread.wait()
         
-        thread.started.connect(worker.run)
-        worker.finished.connect(thread.quit)
-        worker.finished.connect(worker.deleteLater)
-        worker.video_loaded.connect(self.on_video_loaded)
-        worker.error_occurred.connect(self.on_video_error)
-        thread.finished.connect(thread.deleteLater)
+        # Cria nova thread
+        self.thread = QThread()
+        self.worker = VideoLoaderWorker(url)
+        self.worker.moveToThread(self.thread)
         
-        thread.start()
+        # Conecta sinais
+        self.thread.started.connect(self.worker.run)
+        self.worker.finished.connect(self.on_worker_finished)
+        self.worker.video_loaded.connect(self.on_video_loaded)
+        self.worker.error_occurred.connect(self.on_video_error)
+        
+        # CORREÇÃO: Limpeza adequada
+        self.worker.finished.connect(self.thread.quit)
+        self.worker.finished.connect(self.worker.deleteLater)
+        self.thread.finished.connect(self.thread.deleteLater)
+        
+        self.thread.start()
+        
+    def on_worker_finished(self):
+        """Quando o worker termina"""
+        self.play_btn.setEnabled(True)
+        self.log("✅ Worker finalizado")
         
     def on_video_loaded(self, video_path):
         """Quando o vídeo é carregado"""
         self.current_video = video_path
-        self.play_btn.setEnabled(True)
         self.play_pause_btn.setEnabled(True)
         
         # Carrega no VLC
@@ -255,7 +269,6 @@ class VideoPlayerWindow(QMainWindow):
             ip = proxy.split('://')[1].split(':')[0]
             self.proxy_status.setText(f"🛡️ Proxy: Ativo ({ip})")
             self.proxy_status.setStyleSheet("color: #4CAF50; padding: 5px;")
-            self.log(f"🌐 Proxy ativo: {ip}")
         else:
             self.proxy_status.setText("🛡️ Proxy: Indisponível (Conexão Direta)")
             self.proxy_status.setStyleSheet("color: #FFA500; padding: 5px;")
@@ -264,13 +277,17 @@ class VideoPlayerWindow(QMainWindow):
     def log(self, message):
         """Adiciona mensagem no log"""
         self.log_text.append(f"[{QDateTime.currentDateTime().toString('hh:mm:ss')}] {message}")
-        # Scroll para o final
         self.log_text.verticalScrollBar().setValue(
             self.log_text.verticalScrollBar().maximum()
         )
     
     def closeEvent(self, event):
         """Limpa recursos ao fechar"""
+        # Para a thread se estiver rodando
+        if self.thread and self.thread.isRunning():
+            self.thread.quit()
+            self.thread.wait()
+        
         if self.player:
             self.player.stop()
         self.video_loader.cleanup()
