@@ -1,0 +1,234 @@
+# ============================
+# Python
+# ============================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.pyd
+*.dll
+*.exe
+*.spec
+
+# Distribuição / Build
+dist/
+build/
+*.egg-info/
+*.egg
+MANIFEST
+
+# ============================
+# Ambiente Virtual
+# ============================
+.venv/
+venv/
+ENV/
+env/
+env.bak/
+venv.bak/
+.env.local
+.env.*.local
+
+# ============================
+# IDEs e Editores
+# ============================
+# VS Code
+.vscode/
+*.code-workspace
+.vscode-test/
+
+# PyCharm
+.idea/
+*.iml
+*.iws
+.idea_modules/
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+
+# ============================
+# Windows
+# ============================
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# ============================
+# macOS
+# ============================
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+*.swp
+*.swo
+
+# ============================
+# Linux
+# ============================
+*~
+.directory
+*.pid
+*.seed
+*.pid.lock
+
+# ============================
+# Logs e Temporários
+# ============================
+*.log
+*.tmp
+*.temp
+logs/
+temp/
+tmp/
+*.cache
+*.cached
+
+# ============================
+# Banco de Dados
+# ============================
+*.db
+*.sqlite
+*.sqlite3
+
+# ============================
+# Cache do Python
+# ============================
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.mypy_cache/
+.ruff_cache/
+.hypothesis/
+.dmypy.json
+dmypy.json
+
+# ============================
+# Dependências
+# ============================
+pip-log.txt
+pip-delete-this-directory.txt
+.pip/
+
+# ============================
+# Arquivos de Configuração com Senhas
+# ============================
+.env
+.env.production
+.env.local
+.env.*.local
+*.pem
+*.key
+*.crt
+*.p12
+secrets/
+credentials/
+config.local.py
+
+# ============================
+# Arquivos do Projeto
+# ============================
+*.pyo
+*.pyc
+*.pyd
+*.whl
+*.egg
+*.dump
+*.prof
+*.zip
+
+# ============================
+# Vídeos baixados (cache)
+# ============================
+videos_cache/
+temp_videos/
+*.mp4
+*.mkv
+*.avi
+*.webm
+*.flv
+
+# ============================
+# Arquivos do PyInstaller
+# ============================
+*.manifest
+*.spec
+dist/
+build/
+
+# ============================
+# Relatórios de Teste
+# ============================
+coverage.xml
+*.cover
+*.py,cover
+htmlcov/
+
+# ============================
+# Jupyter Notebooks
+# ============================
+.ipynb_checkpoints/
+*.ipynb
+
+# ============================
+# Profiling
+# ============================
+*.prof
+*.lprof
+
+# ============================
+# Backup de Arquivos
+# ============================
+*.bak
+*.backup
+*.old
+*.orig
+
+# ============================
+# Arquivos de Projeto Local
+# ============================
+local_settings.py
+database.ini
+config.ini
+*.local
+
+# ============================
+# Dependências de Frontend (se usar)
+# ============================
+node_modules/
+package-lock.json
+yarn.lock
+dist/
+*.min.js
+*.min.css
+
+# ============================
+# Arquivos Grandes
+# ============================
+*.psd
+*.ai
+*.tiff
+*.pdn
+*.mp3
+*.wav
+*.flac
