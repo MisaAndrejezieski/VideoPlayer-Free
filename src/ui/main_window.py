@@ -175,6 +175,8 @@ class VideoPlayerWindow(QMainWindow):
         if self.thread and self.thread.isRunning():
             self.thread.quit()
             self.thread.wait()
+        if self.player:
+            self.player.stop()
         
         self.thread = QThread()
         self.worker = VideoLoaderWorker(url, self.video_loader)
