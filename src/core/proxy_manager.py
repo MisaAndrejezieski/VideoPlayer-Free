@@ -115,17 +115,22 @@ class ProxyManager:
     
     def get_proxy(self) -> Optional[str]:
         """Retorna um proxy aleatório da lista"""
-        # Atualiza se lista estiver vazia ou antiga
-        if not self.proxies or (time.time() - self.last_update > 300):  # 5 minutos
-            self.update_proxy_list()
-        
         with self.lock:
             if self.proxies:
                 proxy = random.choice(self.proxies)
                 self.current_proxy = proxy
                 return proxy
-        
+
+        if not self.is_updating:
+            thread = threading.Thread(target=self.update_proxy_list, daemon=True)
+            thread.start()
+
         return None
+
+    def get_current_proxy(self) -> Optional[str]:
+        """Retorna o proxy atual sem iniciar atualização"""
+        with self.lock:
+            return self.current_proxy
     
     def get_headers(self) -> dict:
         """Retorna headers com User-Agent aleatório"""

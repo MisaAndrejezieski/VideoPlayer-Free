@@ -1,5 +1,6 @@
 import os
 import sys
+import threading
 
 import vlc
 from PyQt5.QtCore import *
@@ -13,8 +14,8 @@ from core.video_loader import VideoLoader
 class VideoPlayerWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.video_loader = VideoLoader()
         self.proxy_manager = ProxyManager()
+        self.video_loader = VideoLoader(self.proxy_manager)
         self.player = None
         self.current_video = None
         self.is_playing = False
@@ -170,23 +171,20 @@ class VideoPlayerWindow(QMainWindow):
         self.status_label.setText("📥 Carregando...")
         self.play_btn.setEnabled(False)
         
-        # CORREÇÃO: Limpa threads antigas
+        # Limpa threads antigas
         if self.thread and self.thread.isRunning():
             self.thread.quit()
             self.thread.wait()
         
-        # Cria nova thread
         self.thread = QThread()
-        self.worker = VideoLoaderWorker(url)
+        self.worker = VideoLoaderWorker(url, self.video_loader)
         self.worker.moveToThread(self.thread)
         
-        # Conecta sinais
         self.thread.started.connect(self.worker.run)
         self.worker.finished.connect(self.on_worker_finished)
         self.worker.video_loaded.connect(self.on_video_loaded)
         self.worker.error_occurred.connect(self.on_video_error)
         
-        # CORREÇÃO: Limpeza adequada
         self.worker.finished.connect(self.thread.quit)
         self.worker.finished.connect(self.worker.deleteLater)
         self.thread.finished.connect(self.thread.deleteLater)
@@ -264,7 +262,7 @@ class VideoPlayerWindow(QMainWindow):
     
     def update_proxy_status(self):
         """Atualiza status do proxy"""
-        proxy = self.proxy_manager.get_proxy()
+        proxy = self.proxy_manager.get_current_proxy()
         if proxy:
             ip = proxy.split('://')[1].split(':')[0]
             self.proxy_status.setText(f"🛡️ Proxy: Ativo ({ip})")
@@ -273,6 +271,9 @@ class VideoPlayerWindow(QMainWindow):
             self.proxy_status.setText("🛡️ Proxy: Indisponível (Conexão Direta)")
             self.proxy_status.setStyleSheet("color: #FFA500; padding: 5px;")
             self.log("⚠️ Sem proxy - usando conexão direta")
+        
+        if not self.proxy_manager.is_updating and not self.proxy_manager.proxies:
+            threading.Thread(target=self.proxy_manager.update_proxy_list, daemon=True).start()
     
     def log(self, message):
         """Adiciona mensagem no log"""

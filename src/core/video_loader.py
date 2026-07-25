@@ -1,5 +1,6 @@
 import logging
 import os
+import shutil
 import tempfile
 from typing import Optional
 
@@ -10,8 +11,8 @@ from .proxy_manager import ProxyManager
 logger = logging.getLogger(__name__)
 
 class VideoLoader:
-    def __init__(self):
-        self.proxy_manager = ProxyManager()
+    def __init__(self, proxy_manager: Optional[ProxyManager] = None):
+        self.proxy_manager = proxy_manager or ProxyManager()
         self.temp_dir = tempfile.mkdtemp(prefix='video_player_')
         self.current_video = None
         logger.info(f"📁 Pasta temporária: {self.temp_dir}")
@@ -90,7 +91,7 @@ class VideoLoader:
                 os.remove(self.current_video)
                 logger.info(f"🗑️ Arquivo removido: {self.current_video}")
             if os.path.exists(self.temp_dir):
-                os.rmdir(self.temp_dir)
+                shutil.rmtree(self.temp_dir, ignore_errors=True)
                 logger.info(f"🗑️ Pasta removida: {self.temp_dir}")
         except Exception as e:
             logger.warning(f"⚠️ Erro ao limpar cache: {e}")
