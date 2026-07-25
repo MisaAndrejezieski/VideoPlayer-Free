@@ -300,14 +300,14 @@ class VideoLoaderWorker(QObject):
     video_loaded = pyqtSignal(str)
     error_occurred = pyqtSignal(str)
     
-    def __init__(self, url):
+    def __init__(self, url, loader: VideoLoader):
         super().__init__()
         self.url = url
+        self.loader = loader
         
     def run(self):
         try:
-            loader = VideoLoader()
-            video_path = loader.get_video_stream(self.url)
+            video_path = self.loader.get_video_stream(self.url)
             if video_path:
                 self.video_loaded.emit(video_path)
             else:
