@@ -1,11 +1,15 @@
-import sys
 import os
-from PyQt5.QtWidgets import *
+import sys
+
+import vlc
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
-import vlc
-from ..core.video_loader import VideoLoader
-from ..core.proxy_manager import ProxyManager
+from PyQt5.QtWidgets import *
+
+from core.proxy_manager import ProxyManager
+# CORREÇÃO: Import absoluto
+from core.video_loader import VideoLoader
+
 
 class VideoPlayerWindow(QMainWindow):
     def __init__(self):
@@ -26,7 +30,7 @@ class VideoPlayerWindow(QMainWindow):
         
     def setup_ui(self):
         """Configura a interface"""
-        self.setWindowTitle("🎬 Video Player Anônimo - Free")
+        self.setWindowTitle("🎬 Video Player Anônimo")
         self.setGeometry(100, 100, 900, 700)
         
         # Central widget
