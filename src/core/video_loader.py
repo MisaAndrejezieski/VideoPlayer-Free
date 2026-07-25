@@ -19,6 +19,7 @@ class VideoLoader:
         
     def get_video_stream(self, url: str) -> Optional[str]:
         """Retorna o caminho do vídeo baixado"""
+        os.makedirs(self.temp_dir, exist_ok=True)
         try:
             proxy = self.proxy_manager.get_proxy()
             headers = self.proxy_manager.get_headers()

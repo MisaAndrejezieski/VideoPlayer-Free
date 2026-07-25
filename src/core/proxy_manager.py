@@ -106,6 +106,10 @@ class ProxyManager:
             with self.lock:
                 self.proxies = working_proxies
                 self.last_update = time.time()
+                if self.proxies:
+                    self.current_proxy = random.choice(self.proxies)
+                else:
+                    self.current_proxy = None
                 
             logger.info(f"✅ {len(self.proxies)} proxies disponíveis")
         except Exception as e:
@@ -130,7 +134,12 @@ class ProxyManager:
     def get_current_proxy(self) -> Optional[str]:
         """Retorna o proxy atual sem iniciar atualização"""
         with self.lock:
-            return self.current_proxy
+            if self.current_proxy:
+                return self.current_proxy
+            if self.proxies:
+                self.current_proxy = random.choice(self.proxies)
+                return self.current_proxy
+            return None
     
     def get_headers(self) -> dict:
         """Retorna headers com User-Agent aleatório"""
